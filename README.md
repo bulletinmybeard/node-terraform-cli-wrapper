@@ -37,7 +37,7 @@ With a shebang in the `index.js` and the `bin` property in the `package.json`, t
 {
   ...
   "bin": {
-    "tf": "src/index.js"
+    "ntcw": "src/index.js"
   }
 }
 ```
