@@ -3,7 +3,7 @@
 ![App license](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)
 ![App version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 
-A Node.js wrapper for Terraform's command line interface.
+A Node.js wrapper for Terraform's command-line interface.
 
 `tf` runs the `terraform` CLI commands isolated via Node's `child_process`, thus why changing the environment variable `TF_LOG`, according to the debug log level, won't affect the environment variable you've set up for your main terminal session.
 
