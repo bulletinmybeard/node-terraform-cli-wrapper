@@ -1,0 +1,33 @@
+{
+  "name": "node-terraform-cli-wrapper",
+  "version": "1.0.0",
+  "description": "A Node.js wrapper for Terraform's command-line interface.",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bulletinmybeard/node-terraform-cli-wrapper.git"
+  },
+  "keywords": [
+    "nodejs",
+    "terraform",
+    "cli"
+  ],
+  "author": "Robin Schulz <hello@rschu.me>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bulletinmybeard/node-terraform-cli-wrapper/issues"
+  },
+  "homepage": "https://github.com/bulletinmybeard/node-terraform-cli-wrapper#readme",
+  "dependencies": {
+    "@types/node": "^14.14.19"
+  },
+  "bin": {
+    "tf": "src/index.js"
+  },
+  "engines": {
+    "node": "13.13.0"
+  }
+}
