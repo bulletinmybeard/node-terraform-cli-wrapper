@@ -1,7 +1,7 @@
 # NTCW (Node Terraform CLI Wrapper)
 
 ![App license](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)
-![App version](https://img.shields.io/badge/version-1.0.1-blue.svg)
+![App version](https://img.shields.io/badge/version-1.0.2-blue.svg)
 
 A Node.js wrapper for Terraform's command line interface.
 
