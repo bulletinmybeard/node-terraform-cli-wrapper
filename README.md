@@ -1,11 +1,11 @@
-# node-terraform-cli-wrapper
+# NTCW (Node Terraform CLI Wrapper)
 
 ![App license](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)
-![App version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![App version](https://img.shields.io/badge/version-1.0.1-blue.svg)
 
-A Node.js wrapper for Terraform's command-line interface.
+A Node.js wrapper for Terraform's command line interface.
 
-`tf` runs the `terraform` CLI commands isolated via Node's `child_process`, thus why changing the environment variable `TF_LOG`, according to the debug log level, won't affect the environment variable you've set up for your main terminal session.
+`ntcw` runs the `terraform` CLI commands isolated via Node's `child_process`, thus why changing the environment variable `TF_LOG`, according to the debug log level, won't affect the environment variable you've set up for your main terminal session.
 
 ## TOC
 - [Installation](#installation)
@@ -23,7 +23,7 @@ A Node.js wrapper for Terraform's command-line interface.
 [^TOC](#toc)
 
 ```
-npm i -g node-terraform-cli
+npm i -g ntcw
 ```
 
 You can also clone this repository and use NPM to link and make the script globally available.
@@ -44,8 +44,8 @@ With a shebang in the `index.js` and the `bin` property in the `package.json`, t
 
 Clone the repo and install the dependencies
 ```
-git clone git@github.com:bulletinmybeard/node-terraform-cli.git \
-    && cd node-terraform-cli \
+git clone git@github.com:bulletinmybeard/ntcw.git \
+    && cd ntcw \
     && npm install
 ```
 
@@ -57,7 +57,7 @@ npm link
 Use `npm unlink` to remove the symlink to the script
 ```
 npm unlink \
-    node-terraform-cli
+    ntcw
 ```
 
 Make sure the binary symlink is gone for good!
@@ -68,7 +68,7 @@ rm -rf \
 
 ```
 Before: node ./src/index.js validate
-After: tf validate
+After: ntcw validate
 ```
 
 ### Requirements
@@ -84,7 +84,7 @@ I keep the source code as Vanilla as possible and only depend on a few Node core
 ## Run the CLI wrapper
 
 ```
-tf validate
+ntcw validate
 ```
 
 ### Directory watcher
@@ -95,31 +95,31 @@ Passing a directory path to the `watch` argument will overwrite the default work
 Useful witth the terraform command `validate`!
 ```
 // Without path
-tf validate -watch
+ntcw validate -watch
 
 // With relative path
-tf validate -watch=./terraform
+ntcw validate -watch=./terraform
 
 // With absolute path
-tf validate -watch=/usr/local/dev/projects/terraform
+ntcw validate -watch=/usr/local/dev/projects/terraform
 ```
 ### Examples
 [^TOC](#toc)
 ```
-tf version
-tf init
-tf plan -compact-warnings
-tf apply -error
-tf apply -auto (-auto-approve)
-tf validate -watch -trace
-tf plan --help
+ntcw version
+ntcw init
+ntcw plan -compact-warnings
+ntcw apply -error
+ntcw apply -auto (-auto-approve)
+ntcw validate -watch -trace
+ntcw plan --help
 ...
 ```
 
 ### Argument abbreviations
 [^TOC](#toc)
 
-For most of the terraform commands exists a short form of the name (e.g., `tf plan -destroy`). The argument `auto-approve` got the alias `auto`.
+For most of the terraform commands exists a short form of the name (e.g., `ntcw plan -destroy`). The argument `auto-approve` got the alias `auto`.
 
 ```
 const SHORT_COMMAND_MAPPING = {
@@ -145,12 +145,12 @@ const SHORT_ARGUMENT_MAPPING = {
 ```
 
 ```
-tf p -compact-warnings
-tf a -error
-tf a -auto (-auto-approve)
-tf v -watch -trace
-tf p --help
-tf a -auto
+ntcw p -compact-warnings
+ntcw a -error
+ntcw a -auto (-auto-approve)
+ntcw v -watch -trace
+ntcw p --help
+ntcw a -auto
 ...
 ```
 
@@ -160,11 +160,11 @@ tf a -auto
 Debugging is done by passing one of the five supported arguments from below. The arguments represent the log levels for the environment variable `TF_LOG` (e.g., `TF_LOG="trace"`).
 
 ```
-tf validate -trace
-tf validate -debug
-tf validate -info
-tf validate -warning
-tf validate -error
+ntcw validate -trace
+ntcw validate -debug
+ntcw validate -info
+ntcw validate -warning
+ntcw validate -error
 ```
 
 # References
@@ -187,4 +187,3 @@ tf validate -error
 
 - [ ] Refactor the watcher to use one or multiple glob patterns.
 - [ ] Refactor the `execModule` and capture the stdout stream to replace all `terraform` command references with `tf`. 
- 
