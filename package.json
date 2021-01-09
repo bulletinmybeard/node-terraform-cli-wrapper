@@ -15,7 +15,11 @@
     "terraform",
     "cli"
   ],
-  "author": "Robin Schulz <hello@rschu.me>",
+    "author": {
+        "name": "Robin Schulz",
+        "email": "hello@rschu.me",
+        "url": "https://rschu.me/"
+    },
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/bulletinmybeard/ntcw/issues"
