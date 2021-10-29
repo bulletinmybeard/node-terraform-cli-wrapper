@@ -1,205 +1,16 @@
 #!/usr/bin/env node
 
-const { promisify } = require('util');
-const { execSync, exec } = require('child_process');
-const execPromiseModule = promisify(exec);
+'use strict';
+
 
 const { extname } = require('path');
 const { existsSync, watch } = require('fs');
-
-const LOG_LEVELS = [
-    'trace',
-    'debug',
-    'info',
-    'warn',
-    'error',
-];
-
-const SHORT_COMMAND_MAPPING = {
-    a: 'apply',
-    c: 'console',
-    d: 'destroy',
-    e: 'env',
-    f: 'fmt',
-    i: 'import',
-    o: 'output',
-    p: 'plan',
-    r: 'refresh',
-    s: 'show',
-    t: 'taint',
-    u: 'untaint',
-    v: 'validate',
-    w: 'workspace',
-};
-
-const SHORT_ARGUMENT_MAPPING = {
-    auto: 'auto-approve',
-};
-
-/**
- * `getScriptArgs` processes and validates all given script arguments.
- *
- * @returns {Object}
- */
-const getScriptArgsAndStuff = async () => {
-
-    let command = (process.argv)[2];
-    if (typeof command === 'undefined') {
-        command = '-help';
-    }
-
-    // Replace short commands with the original ones.
-    if (command in SHORT_COMMAND_MAPPING) {
-        command = SHORT_COMMAND_MAPPING[command];
-    }
-
-    // Skipe the node binary and absolute script path.
-    const args = (process.argv).slice(3);
-
-    // Filter and format values (if necessary!).
-    const arguments = args.reduce((args, arg) => {
-        const matches = arg.match(new RegExp('-{1,2}([-a-z]+)=?([\\.\\/_\\w]+)?'));
-        if (matches !== null) {
-            let [, key, value] = matches;
-
-            // Replace short arguments with the original ones.
-            if (key in SHORT_ARGUMENT_MAPPING) {
-                key = SHORT_ARGUMENT_MAPPING[key];
-            }
-
-            if (typeof value === 'string') {
-                if (['true', 'false'].includes(value)) {
-                    value = (value === 'true');
-                } else {
-                    value = `${value}`.toLowerCase();
-                }
-            }
-
-            args[key] = value;
-        }
-        return args;
-    }, {});
-
-    /**
-     * Since the script can be executed globally and anywhere,
-     * we have to obtain the current directory path
-     */
-    const pwd = await execPromise('pwd');
-    const workingDirectory = (pwd !== args.dirname)
-        ? pwd.trim()
-        : args.dirname;
-
-    return {
-        command,
-        workingDirectory,
-        arguments
-    };
-};
-
-/**
- * `execPromise` is a wrapper with some command validations.
- *
- * @param {Array|String} commands
- * @param {Boolean=} selfEcho
- * @returns {Promise|Error}
- */
-const execPromise = async (commands, selfEcho = false) => {
-    if (Object.prototype.toString.call(commands) === '[object Array]') {
-        commands = commands
-            .filter(item => typeof item !== 'undefined')
-            .join(' ');
-    } else if (typeof commands === 'string') {
-        if (!commands.length) {
-            throw Error(`exec.command '${JSON.stringify(commands)}' (${typeof commands}) is empty!`);
-        }
-        commands = commands.trim();
-    } else {
-        throw Error(`exec.command '${JSON.stringify(commands)}' (${typeof commands}) not supported!`);
-    }
-    const { stderr, stdout } = await execPromiseModule(commands);
-    if (stderr) {
-        throw Error(stderr);
-    }
-
-    if (!selfEcho) {
-        return stdout;
-    }
-};
-
-/**
- * `execModule` works similar to `execPromise`,
- * but without being asynchronous and return value
- *
- * @param {Array|String} commands
- * @param {Boolean=} silenzio
- * @returns (Undefined)
- */
-const execModule = (commands, silenzio = true) => {
-    if (Object.prototype.toString.call(commands) === '[object Array]') {
-        commands = commands
-            .filter(item => typeof item !== 'undefined')
-            .join(' ');
-    } else if (typeof commands === 'string') {
-        if (!commands.length) {
-            throw Error(`execModule: '${JSON.stringify(commands)}' (${typeof commands}) is empty!`);
-        }
-        commands = commands.trim();
-    } else {
-        throw Error(`execModule: '${JSON.stringify(commands)}' (${typeof commands}) not supported!`);
-    }
-    try {
-        execSync(
-            commands,
-            {
-                stdio: 'inherit',
-                maxBuffer: (1024 * 4096)
-            }
-        );
-    } catch (err) {
-        if (!silenzio) {
-            throw Error(err);
-        }
-    }
-};
-
-/**
- * `buildCommandList` builds an Array containing the terraform command and arguments.
- *
- * @param {Array} arguments
- * @param {String} command
- * @returns {Array}
- */
-const buildCommandList = (arguments, command) => {
-
-    let commandList = [
-        'terraform',
-        command,
-    ];
-
-    const logLevel = Object
-        .keys(arguments)
-        .find((key) =>
-            LOG_LEVELS.includes(key));
-
-    if (typeof logLevel !== 'undefined') {
-        commandList = [...[ 'export', `TF_LOG="${logLevel}" &&` ], ...commandList];
-    }
-
-    return [...commandList, ...Object.entries(arguments).reduce((args, [key, value]) => {
-        if (![...LOG_LEVELS, ...[
-            'watch',
-        ]].includes(key)) {
-
-            let argString = `-${key}`;
-            if (typeof value !== 'undefined') {
-                argString += `=${value}`;
-            }
-
-            args.push(argString);
-        }
-        return args;
-    }, [])];
-};
+const {
+    processScriptArguments,
+    execModule,
+    buildCommandList,
+    checkTerraformApp,
+} = require('./helper');
 
 let exitScript = true;
 
@@ -209,7 +20,7 @@ let exitScript = true;
  *
  * @param {String=} exitCode
  */
-exitHandler = (exitCode) => {
+const exitHandler = (exitCode) => {
     // Gracefully exit.
     if (exitCode === 'ok') {
         return process.exit(0);
@@ -227,17 +38,35 @@ process.on('uncaughtException', exitHandler);
 
 (async () => {
 
-    const { command, workingDirectory, arguments } = await getScriptArgsAndStuff();
+    // TODO: Check for the platform and os and rewrite path delimiters and such!!
+    // TODO: Check for the platform and os and rewrite path delimiters and such!!
+    // TODO: Check for the platform and os and rewrite path delimiters and such!!
+    // TODO: Check for the platform and os and rewrite path delimiters and such!!
+
+    /**
+     * Make sure that the `terraform` app is installed!
+     * @type {boolean}
+     */
+    const terraformExists = await checkTerraformApp();
+    if (!terraformExists) {
+        throw Error(`'terraform' application not found. Please download and install 'terraform' first: https://www.terraform.io/downloads.html`)
+    }
+
+    const {
+        cmdList,
+        argList,
+        workingDirectory
+    } = await processScriptArguments();
 
     // Stop the script gracefully
-    if ('test' in arguments) {
+    if (argList.find(arg => arg === 'test')) {
         return exitHandler('ok');
     }
 
-    const commandList = buildCommandList(arguments, command);
+    const commandList = buildCommandList(argList, cmdList);
 
     // Execute the command with all its arguments.
-    execModule(commandList);
+    execModule(commandList, true);
 
     /**
      * Using the script argument `--watch` will attach a watcher to the directory
@@ -282,7 +111,7 @@ process.on('uncaughtException', exitHandler);
     }
 })().catch(err => {
     if (exitScript) {
-        console.error(err);
+        console.error(err.message);
         exitHandler();
     }
 });
